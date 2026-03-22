@@ -19,6 +19,7 @@ document.getElementById('generate-xy-btn').addEventListener('click', () => {
         .replace(/cos/g, 'Math.cos')
         .replace(/tan/g, 'Math.tan')
         .replace(/exp/g, 'Math.exp')
+        .replace(/ln/g, 'Math.log')
         .replace(/log/g, 'Math.log')
         .replace(/sqrt/g, 'Math.sqrt')
         .replace(/\^/g, '**');
@@ -140,6 +141,7 @@ document.getElementById('calculate-area-btn').addEventListener('click', () => {
         if (selectedMethod === "auto") {
             if (Number.isInteger(Math.log2(n))) methodToRun = "romberg";
             else if (n % 3 === 0) methodToRun = "simp38";
+            else if (n % 6 === 0) methodToRun = "weddle"; // Weddle takes priority for multiples of 6!
             else if (n % 2 === 0) methodToRun = "simp13";
             else methodToRun = "trap";
         }
@@ -157,7 +159,14 @@ document.getElementById('calculate-area-btn').addEventListener('click', () => {
             resultData = solveSimpson38(y, h);
             methodName = selectedMethod === "auto" ? "Simpson's 3/8 Rule (Auto)" : "Simpson's 3/8 Rule";
             methodColor = "#8b5cf6"; 
-        } else if (methodToRun === "romberg") {
+        }
+        else if (methodToRun === "weddle") {
+            resultData = solveWeddle(y, h);
+            methodName = selectedMethod === "auto" ? "Weddle's Rule (Auto)" : "Weddle's Rule";
+            methodColor = "#f59e0b"; // Amber/Yellow
+        } 
+        
+        else if (methodToRun === "romberg") {
             resultData = solveRomberg(y, h);
             methodName = selectedMethod === "auto" ? "Romberg Integration (Auto)" : "Romberg Integration";
             methodColor = "#ef4444"; 
