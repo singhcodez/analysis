@@ -1,14 +1,96 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ODE Solver | Initial Value Problems</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .step-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        .step-table th, .step-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: center;
+        }
+        .step-table th {
+            background-color: #f1f5f9;
+            color: var(--primary-dark);
+        }
+    </style>
 </head>
-
 <body>
-  
-</body>
 
+<div class="container" style="display: block; max-width: 1200px; margin: 20px auto;">
+    
+    <a href="index.html" style="display:inline-block; margin-bottom: 20px; text-decoration: none; color: var(--primary-color); font-weight: bold;">← Back to MathLab Hub</a>
+
+    <div class="container" style="margin: 0;">
+        <div class="control-panel">
+            <h2>Initial Value Problem (IVP)</h2>
+            <p style="color: var(--text-muted); margin-bottom: 15px; font-size: 0.9em;">
+                Enter the derivative equation dy/dx = f(x,y) and your starting conditions.
+            </p>
+            
+            <div style="background: #e8f4f8; padding: 15px; border-radius: 8px; border: 1px solid #bae6fd; margin-bottom: 20px;">
+                <div class="input-group">
+                    <label for="ode-func">Derivative dy/dx = f(x, y):</label>
+                    <input type="text" id="ode-func" placeholder="e.g., x + y or x^2 - y" style="border-color: #7dd3fc;">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div class="input-group" style="flex: 1;">
+                    <label for="ode-x0">Initial x₀:</label>
+                    <input type="number" id="ode-x0" value="0">
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label for="ode-y0">Initial y₀:</label>
+                    <input type="number" id="ode-y0" value="1">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <div class="input-group" style="flex: 1;">
+                    <label for="ode-target">Target X:</label>
+                    <input type="number" id="ode-target" value="0.2">
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label for="ode-h">Step Size (h):</label>
+                    <input type="number" id="ode-h" value="0.1">
+                </div>
+            </div>
+
+            <div class="methods-group" style="margin-top: 25px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <h4 style="margin-top: 0; color: var(--text-main); font-size: 0.95em;">Select Solving Method:</h4>
+                <label style="display:block; margin-bottom:5px;"><input type="radio" name="ode-method" value="euler" checked> 🚶‍♂️ Euler's Method (Basic Step)</label>
+                <label style="display:block; margin-bottom:5px;"><input type="radio" name="ode-method" value="rk4"> 🚀 Runge-Kutta (4th Order)</label>
+               <label style="display:block;"><input type="radio" name="ode-method" value="picard"> 🔄 Picard's Method (Successive Approx.)</label>
+
+            </div>
+
+            <button id="solve-ode-btn" style="margin-top: 20px;">Solve ODE</button>
+        </div>
+
+        <div class="results-panel">
+            <h2>Solution & Steps</h2>
+            <div id="ode-result">
+                <p style="text-align:center; color:var(--text-muted); padding-top:40px;">Enter an equation and conditions to solve.</p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+
+<script src="./ode.js"></script>
+<script src="./ode/euler.js"></script>
+<script src="./ode/runge-kutta.js" ></script>
+<script src="./ode/picard.js" ></script>
+
+</body>
 </html>
