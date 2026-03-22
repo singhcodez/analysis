@@ -40,7 +40,11 @@
                     <label><input type="radio" name="interp-method" value="backward"> ↘️ Newton's Backward</label>
                     <label><input type="radio" name="interp-method" value="stirling"> 🎯 Stirling's Central</label>
                           <label style="display:block;"><input type="radio" name="interp-method" value="bessel"> ⚖️ Bessel's Central</label>
+                          
+                 <label style="display:block;"><input type="radio" name="interp-method" value="lagrange"> 🔗 Lagrange's Formula (Any Data)</label>         
                 </div>
+                
+                
             </div>
 
             <button id="generate-table-btn" style="margin-top: 20px;">Generate Table & Interpolate</button>
@@ -64,6 +68,7 @@
 <script src="./finitedifference/newtonBackward.js"></script>
 <script src="./finitedifference/stirling.js"></script>
 <script src="./finitedifference/bessel.js"></script>
+<script src="./finitedifference/lagrange.js"></script>
 <script src="finitedifferences.js"></script>
 
 </body>

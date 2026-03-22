@@ -51,6 +51,8 @@ document.getElementById('generate-table-btn').addEventListener('click', () => {
     html += `</tbody></table></div>`;
     tableContainer.innerHTML = html;
 
+
+
     // --- 2. INTERPOLATION LOGIC ---
     if (targetXStr.trim() !== "") {
         const targetX = parseFloat(targetXStr);
@@ -60,52 +62,69 @@ document.getElementById('generate-table-btn').addEventListener('click', () => {
         let methodName = "";
         let methodColor = "";
 
-        // Determine which method to use based on Radio Buttons
+        // Check if data is equally spaced
+        let isEquallySpaced = true;
+        let stepH = x[1] - x[0];
+        for(let i = 1; i < x.length - 1; i++) {
+            if(Math.abs((x[i+1] - x[i]) - stepH) > 1e-5) isEquallySpaced = false;
+        }
+
         let methodToRun = selectedMethod;
 
+        // Hyper-Intelligent Auto-Select
         if (selectedMethod === "auto") {
-            // Split the data range into thirds to auto-select
-            const range = x[x.length - 1] - x[0];
-            const lowerThird = x[0] + (range / 3);
-            const upperThird = x[x.length - 1] - (range / 3);
+            if (!isEquallySpaced) {
+                // If data is messy, we MUST use Lagrange
+                methodToRun = "lagrange";
+            } else {
+                // If data is clean, split into thirds and pick the best algorithm
+                const range = x[x.length - 1] - x[0];
+                const lowerThird = x[0] + (range / 3);
+                const upperThird = x[x.length - 1] - (range / 3);
 
-            if (targetX <= lowerThird) methodToRun = "forward";
-            else if (targetX >= upperThird) methodToRun = "backward";
-            else methodToRun = "stirling";
+                if (targetX <= lowerThird) methodToRun = "forward";
+                else if (targetX >= upperThird) methodToRun = "backward";
+                else methodToRun = "stirling";
+            }
         }
 
         // Execute the selected method
         if (methodToRun === "forward") {
             resultData = solveNewtonForward(x, y, diffTable, targetX);
-            methodName = selectedMethod === "auto" ? "Newton's Forward (Auto-Selected)" : "Newton's Forward Method";
-            methodColor = "var(--primary-color)"; // Blue
-        }
-        else if (methodToRun === "backward") {
+            methodName = selectedMethod === "auto" ? "Newton's Forward (Auto)" : "Newton's Forward Method";
+            methodColor = "var(--primary-color)"; 
+        } else if (methodToRun === "backward") {
             resultData = solveNewtonBackward(x, y, diffTable, targetX);
-            methodName = selectedMethod === "auto" ? "Newton's Backward (Auto-Selected)" : "Newton's Backward Method";
-            methodColor = "#f59e0b"; // Orange
-        } 
-        else if (methodToRun === "stirling") {
+            methodName = selectedMethod === "auto" ? "Newton's Backward (Auto)" : "Newton's Backward Method";
+            methodColor = "#f59e0b"; 
+        } else if (methodToRun === "stirling") {
             resultData = solveStirling(x, y, diffTable, targetX);
-            methodName = selectedMethod === "auto" ? "Stirling's Central (Auto-Selected)" : "Stirling's Central Method";
-            methodColor = "#10b981"; // Green
-        }
-        else if (methodToRun === "bessel") {
+            methodName = selectedMethod === "auto" ? "Stirling's Central (Auto)" : "Stirling's Central Method";
+            methodColor = "#10b981"; 
+        } else if (methodToRun === "bessel") {
             resultData = solveBessel(x, y, diffTable, targetX);
             methodName = "Bessel's Central Method";
-            methodColor = "#8b5cf6"; // Purple
+            methodColor = "#8b5cf6"; 
+        } else if (methodToRun === "lagrange") {
+            resultData = solveLagrange(x, y, targetX);
+            methodName = selectedMethod === "auto" ? "Lagrange's Formula (Auto - Unequal Data Detected)" : "Lagrange's Interpolation Formula";
+            methodColor = "#ef4444"; // Red for the heavy-duty formula
         }
 
         // Render Results
         if (resultData.error) {
-            resultContainer.innerHTML = `<p style="color:red; font-weight:bold;">Warning: ${resultData.error}</p>`;
+            resultContainer.innerHTML = `<p style="color:red; font-weight:bold; padding: 15px; background: #fee2e2; border-radius: 6px;">Warning: ${resultData.error}</p>`;
         } else {
+            // Dynamic text depending on if it's Lagrange (no p or h) or the others
+            let paramText = resultData.isLagrange 
+                ? `<p style="font-size: 1.0em; margin: 0; color: var(--text-muted); font-style: italic;">(Lagrange uses raw data coordinates instead of 'h' and 'p')</p>`
+                : `<p style="font-size: 1.1em; margin: 0;">Step size (h) = ${resultData.h}</p><p style="font-size: 1.1em; margin: 0;">Ratio (p) = ${resultData.p.toFixed(4)}</p>`;
+
             resultContainer.innerHTML = `
                 <div style="background: white; border: 2px solid ${methodColor}; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
                     <h3 style="color: ${methodColor}; margin-top: 0;">Interpolation Result</h3>
                     <p style="font-size: 1.1em; margin-bottom: 5px;">Using <strong>${methodName}</strong> for target <strong>X = ${targetX}</strong>:</p>
-                    <p style="font-size: 1.1em; margin: 0;">Step size (h) = ${resultData.h}</p>
-                    <p style="font-size: 1.1em; margin: 0;">Ratio (p) = ${resultData.p.toFixed(4)}</p>
+                    ${paramText}
                     <div style="font-size: 1.8em; font-weight: bold; color: #0f172a; margin-top: 15px; text-align: center; background: #f8fafc; padding: 10px; border-radius: 6px;">
                         Y = ${resultData.result.toFixed(4)}
                     </div>
