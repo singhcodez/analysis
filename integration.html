@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numerical Integration | Area Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container" style="display: block; max-width: 1200px; margin: 20px auto;">
+    
+    <a href="index.html" style="display:inline-block; margin-bottom: 20px; text-decoration: none; color: var(--primary-color); font-weight: bold;">← Back to MathLab Hub</a>
+
+    <div class="container" style="margin: 0;">
+        <div class="control-panel">
+            <h2>Data Input (Integration)</h2>
+            <p style="color: var(--text-muted); margin-bottom: 15px; font-size: 0.9em;">
+                Enter your equally-spaced data points to calculate the area under the curve.
+            </p>
+            
+            <div class="input-group">
+                <label for="x-values">X Values (Equally Spaced):</label>
+                <input type="text" id="x-values" placeholder="e.g., 0, 1, 2, 3, 4, 5, 6" value="0, 1, 2, 3, 4, 5, 6">
+            </div>
+
+            <div class="input-group">
+                <label for="y-values">Y Values (f(x)):</label>
+                <input type="text" id="y-values" placeholder="e.g., 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01" value="1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01">
+            </div>
+
+            <div class="methods-group" style="margin-top: 25px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <h4 style="margin-top: 0; color: var(--text-main); font-size: 0.95em;">Select Integration Rule:</h4>
+                <label style="display:block; margin-bottom:5px;"><input type="radio" name="integ-method" value="auto" checked> 🤖 Auto-Select (Best Accuracy)</label>
+                <label style="display:block; margin-bottom:5px;"><input type="radio" name="integ-method" value="trap"> 📐 Trapezoidal Rule (Any intervals)</label>
+                <label style="display:block; margin-bottom:5px;"><input type="radio" name="integ-method" value="simp13"> 🎢 Simpson's 1/3 Rule (Even intervals)</label>
+                <label style="display:block;"><input type="radio" name="integ-method" value="simp38"> 🌊 Simpson's 3/8 Rule (Multiples of 3)</label>
+            </div>
+
+            <button id="calculate-area-btn" style="margin-top: 20px;">Calculate Area</button>
+        </div>
+
+        <div class="results-panel">
+            <h2>Calculated Area</h2>
+            <div id="integration-result">
+                <p style="text-align:center; color:var(--text-muted); padding-top:40px;">Enter data to calculate the area under the curve.</p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<script src="./Integration/trapezoidal.js"></script>
+<script src="./Integration/simpson13.js"></script>
+<script src="./Integration/simpson38.js"></script>
+<script src="integration.js"></script>
+</body>
+</html>
