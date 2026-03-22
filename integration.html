@@ -66,6 +66,11 @@
                 <label style="display:block;"><input type="radio" name="integ-method" value="simp38"> 🌊 Simpson's 3/8 Rule (Multiples of 3)</label>
                 <label style="display:block;"><input type="radio" name="integ-method" value="romberg"> 🎯 Romberg Integration (Power of 2 intervals)
                 </label>
+                
+                <label style="display:block; margin-bottom:5px; color: #b91c1c;"><input type="radio" name="integ-method" value="gauss2"> 🧲 Gauss-Legendre (2-Point) *</label>
+                <label style="display:block; color: #b91c1c;"><input type="radio" name="integ-method" value="gauss3"> 🧲 Gauss-Legendre (3-Point) *</label>
+                <p style="font-size: 0.8em; color: var(--text-muted); margin-top: 8px; font-style: italic;">* Gauss methods ignore raw data and calculate directly from the f(x) Equation Generator.</p>
+                
                 </div>
             </div>
 
@@ -85,6 +90,7 @@
 <script src="./Integration/simpson13.js"></script>
 <script src="./Integration/simpson38.js"></script>
 <script src="./Integration/romberg.js"></script>
+<script src="./Integration/gausslegendre.js"></script>
 <script src="integration.js"></script>
 </body>
 </html>

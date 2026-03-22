@@ -1,6 +1,6 @@
 // integration.js - Main Controller
 
-// --- NEW: EQUATION GENERATOR LOGIC ---
+// --- 1. EQUATION GENERATOR ---
 document.getElementById('generate-xy-btn').addEventListener('click', () => {
     const funcStr = document.getElementById('eq-func').value;
     const a = parseFloat(document.getElementById('eq-a').value);
@@ -12,118 +12,146 @@ document.getElementById('generate-xy-btn').addEventListener('click', () => {
         return;
     }
 
-    let h = (b - a) / n;
-    let xArr = [];
-    let yArr = [];
-
-    // Basic Math Parser to make standard math syntax readable by Javascript
+    // Basic Math Parser
     let parsedFunc = funcStr
-        .replace(/Math\./g, '') // Clean up just in case
+        .replace(/Math\./g, '') 
         .replace(/sin/g, 'Math.sin')
         .replace(/cos/g, 'Math.cos')
         .replace(/tan/g, 'Math.tan')
         .replace(/exp/g, 'Math.exp')
         .replace(/log/g, 'Math.log')
         .replace(/sqrt/g, 'Math.sqrt')
-        .replace(/\^/g, '**'); // Convert 1+x^2 to Javascript's 1+x**2
+        .replace(/\^/g, '**');
+
+    // PROFESSIONAL OPTIMIZATION: Compile the function once, not inside the loop
+    let mathFunc;
+    try {
+        mathFunc = new Function('x', `return ${parsedFunc};`);
+    } catch (e) {
+        alert("Invalid function syntax. Please use standard math like 1/(1+x^2) or sin(x).");
+        return;
+    }
+
+    let h = (b - a) / n;
+    let xArr = [];
+    let yArr = [];
 
     for (let i = 0; i <= n; i++) {
         let currentX = a + i * h;
-        // Fix floating point weirdness on the X values
         xArr.push(parseFloat(currentX.toFixed(5)));
         
         try {
-            // Evaluate the function! The variable 'x' is used inside the eval() string.
-            let x = currentX; 
-            let currentY = eval(parsedFunc);
+            // Execute the pre-compiled function
+            let currentY = mathFunc(currentX);
+            if (isNaN(currentY) || !isFinite(currentY)) throw new Error("Math Error");
             
-            // Push to array, rounded to 5 decimal places for clean UI
             yArr.push(parseFloat(currentY.toFixed(5)));
         } catch (e) {
-            alert("Invalid function syntax. Please use standard math like 1/(1+x^2) or sin(x).");
+            alert(`Mathematical error evaluated at x = ${currentX}. Check your equation for invalid limits (like dividing by zero).`);
             return;
         }
     }
 
-    // Automatically fill the manual input boxes with our generated arrays!
+    // Fill inputs and clear results
     document.getElementById('x-values').value = xArr.join(', ');
     document.getElementById('y-values').value = yArr.join(', ');
-    
-    // Clear any old results
     document.getElementById('integration-result').innerHTML = `<p style="text-align:center; color:var(--text-muted); padding-top:40px;">Data generated! Click "Calculate Area" below.</p>`;
 });
 
 
-
+// --- 2. AREA CALCULATOR ---
 document.getElementById('calculate-area-btn').addEventListener('click', () => {
-    const xInput = document.getElementById('x-values').value;
-    const yInput = document.getElementById('y-values').value;
     const selectedMethod = document.querySelector('input[name="integ-method"]:checked').value;
     const resultContainer = document.getElementById('integration-result');
 
-    const x = xInput.split(',').map(val => parseFloat(val.trim()));
-    const y = yInput.split(',').map(val => parseFloat(val.trim()));
-
-    // Validation
-    if (x.some(isNaN) || y.some(isNaN)) {
-        resultContainer.innerHTML = `<p style="color:red; font-weight:bold;">Error: Invalid numbers.</p>`;
-        return;
-    }
-    if (x.length !== y.length) {
-        resultContainer.innerHTML = `<p style="color:red; font-weight:bold;">Error: X and Y counts must match.</p>`;
-        return;
-    }
-    if (x.length < 2) {
-        resultContainer.innerHTML = `<p style="color:red; font-weight:bold;">Error: Need at least 2 points to find an area.</p>`;
-        return;
-    }
-
-    // Check equally spaced X values using the epsilon trick
-    let h = x[1] - x[0];
-    for (let i = 1; i < x.length - 1; i++) {
-        if (Math.abs((x[i+1] - x[i]) - h) > 1e-5) {
-            resultContainer.innerHTML = `<p style="color:red; font-weight:bold; padding:15px; background:#fee2e2; border-radius:6px;">Warning: Numerical Integration requires strictly equally spaced X values.</p>`;
-            return;
-        }
-    }
-
-    let n = x.length - 1; // Number of intervals
     let resultData;
     let methodName = "";
     let methodColor = "";
+    let n_display = "N/A";
+    let h_display = "N/A";
 
-    let methodToRun = selectedMethod;
+    // GAUSS-LEGENDRE BYPASS
+    if (selectedMethod === "gauss2" || selectedMethod === "gauss3") {
+        const funcStr = document.getElementById('eq-func').value;
+        const a = parseFloat(document.getElementById('eq-a').value);
+        const b = parseFloat(document.getElementById('eq-b').value);
 
-    // Hyper-Intelligent Auto-Select Logic
-    if (selectedMethod === "auto") {
-        // Romberg is the most accurate, check if n is a power of 2 first
-        if (Number.isInteger(Math.log2(n))) methodToRun = "romberg";
-        else if (n % 3 === 0) methodToRun = "simp38";
-        else if (n % 2 === 0) methodToRun = "simp13";
-        else methodToRun = "trap";
+        if (!funcStr || isNaN(a) || isNaN(b)) {
+            resultContainer.innerHTML = `<p style="color:red; font-weight:bold;">Error: Gauss-Legendre requires the f(x) Equation, Lower Limit (a), and Upper Limit (b) to be filled out above.</p>`;
+            return;
+        }
+
+        let points = selectedMethod === "gauss2" ? 2 : 3;
+        resultData = solveGaussLegendre(funcStr, a, b, points);
+        methodName = `Gauss-Legendre (${points}-Point)`;
+        methodColor = "#b91c1c"; 
+        n_display = `Evaluated at ${points} optimal points`;
+    } 
+    // DISCRETE DATA LOGIC
+    else {
+        const xInput = document.getElementById('x-values').value;
+        const yInput = document.getElementById('y-values').value;
+
+        const x = xInput.split(',').map(val => parseFloat(val.trim()));
+        const y = yInput.split(',').map(val => parseFloat(val.trim()));
+
+        // Validation
+        if (x.some(isNaN) || y.some(isNaN)) {
+            resultContainer.innerHTML = `<p style="color:red; font-weight:bold;">Error: Invalid numbers.</p>`;
+            return;
+        }
+        if (x.length !== y.length) {
+            resultContainer.innerHTML = `<p style="color:red; font-weight:bold;">Error: X and Y counts must match.</p>`;
+            return;
+        }
+        if (x.length < 2) {
+            resultContainer.innerHTML = `<p style="color:red; font-weight:bold;">Error: Need at least 2 points to find an area.</p>`;
+            return;
+        }
+
+        let h = x[1] - x[0];
+        for (let i = 1; i < x.length - 1; i++) {
+            if (Math.abs((x[i+1] - x[i]) - h) > 1e-5) {
+                resultContainer.innerHTML = `<p style="color:red; font-weight:bold; padding:15px; background:#fee2e2; border-radius:6px;">Warning: Numerical Integration requires strictly equally spaced X values.</p>`;
+                return;
+            }
+        }
+
+        let n = x.length - 1; 
+        n_display = n.toString(); // Map to display variables
+        h_display = h.toFixed(5);
+        
+        let methodToRun = selectedMethod;
+
+        // Auto-Select Logic
+        if (selectedMethod === "auto") {
+            if (Number.isInteger(Math.log2(n))) methodToRun = "romberg";
+            else if (n % 3 === 0) methodToRun = "simp38";
+            else if (n % 2 === 0) methodToRun = "simp13";
+            else methodToRun = "trap";
+        }
+
+        // Execution Routing
+        if (methodToRun === "trap") {
+            resultData = solveTrapezoidal(y, h);
+            methodName = selectedMethod === "auto" ? "Trapezoidal Rule (Auto)" : "Trapezoidal Rule";
+            methodColor = "#3b82f6"; 
+        } else if (methodToRun === "simp13") {
+            resultData = solveSimpson13(y, h);
+            methodName = selectedMethod === "auto" ? "Simpson's 1/3 Rule (Auto)" : "Simpson's 1/3 Rule";
+            methodColor = "#10b981"; 
+        } else if (methodToRun === "simp38") {
+            resultData = solveSimpson38(y, h);
+            methodName = selectedMethod === "auto" ? "Simpson's 3/8 Rule (Auto)" : "Simpson's 3/8 Rule";
+            methodColor = "#8b5cf6"; 
+        } else if (methodToRun === "romberg") {
+            resultData = solveRomberg(y, h);
+            methodName = selectedMethod === "auto" ? "Romberg Integration (Auto)" : "Romberg Integration";
+            methodColor = "#ef4444"; 
+        }
     }
 
-    // Execute the appropriate module
-    if (methodToRun === "trap") {
-        resultData = solveTrapezoidal(y, h);
-        methodName = selectedMethod === "auto" ? "Trapezoidal Rule (Auto)" : "Trapezoidal Rule";
-        methodColor = "#3b82f6"; 
-    } else if (methodToRun === "simp13") {
-        resultData = solveSimpson13(y, h);
-        methodName = selectedMethod === "auto" ? "Simpson's 1/3 Rule (Auto)" : "Simpson's 1/3 Rule";
-        methodColor = "#10b981"; 
-    } else if (methodToRun === "simp38") {
-        resultData = solveSimpson38(y, h);
-        methodName = selectedMethod === "auto" ? "Simpson's 3/8 Rule (Auto)" : "Simpson's 3/8 Rule";
-        methodColor = "#8b5cf6"; 
-    // --- ADD ROMBERG BLOCK ---
-    } else if (methodToRun === "romberg") {
-        resultData = solveRomberg(y, h);
-        methodName = selectedMethod === "auto" ? "Romberg Integration (Auto - Power of 2 Detected)" : "Romberg Integration";
-        methodColor = "#ef4444"; // Red for high-precision
-    }
-
-    // Render Output
+    // --- RENDER UNIFIED OUTPUT ---
     if (resultData.error) {
         resultContainer.innerHTML = `<p style="color:red; font-weight:bold; padding:15px; background:#fee2e2; border-radius:6px;">${resultData.error}</p>`;
     } else {
@@ -132,16 +160,16 @@ document.getElementById('calculate-area-btn').addEventListener('click', () => {
                 <h3 style="color: ${methodColor}; margin-top: 0;">Area Result</h3>
                 <p style="font-size: 1.1em; margin-bottom: 5px;">Using <strong>${methodName}</strong>:</p>
                 <div style="display: flex; gap: 20px; color: var(--text-muted); margin-top: 10px;">
-                    <span><strong>Intervals (n):</strong> ${n}</span>
-                    <span><strong>Step Size (h):</strong> ${h.toFixed(4)}</span>
+                    <span><strong>Intervals (n):</strong> ${n_display}</span>
+                    <span><strong>Step Size (h):</strong> ${h_display}</span>
                 </div>
                 <div style="font-size: 2em; font-weight: bold; color: #0f172a; margin-top: 20px; text-align: center; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px dashed ${methodColor};">
                     Area ≈ ${resultData.area.toFixed(6)}
                 </div>
         `;
 
-        // Optional: If Romberg was used, print the extrapolation table for the students!
-        if (methodToRun === "romberg" && resultData.table) {
+        // Render Romberg Table if applicable
+        if (resultData.table) {
             html += `<h4 style="margin-top: 20px; color: var(--text-main);">Romberg Extrapolation Table:</h4>
                      <div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 0.9em;"><tbody>`;
             resultData.table.forEach(row => {
