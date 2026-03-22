@@ -56,6 +56,12 @@ document.getElementById('solve-ode-btn').addEventListener('click', () => {
         methodName = "Runge-Kutta 4th Order (RK4)";
         methodColor = "#8b5cf6"; // Purple
     }
+    else if (method === "taylor") {
+        resultData = solveTaylor(f, x0, y0, targetX, h);
+        methodName = "Taylor Series Method (3rd Order)";
+        methodColor = "#10b981"; // Green
+    } 
+
     else if (method === "picard") {
         resultData = solvePicard(f, x0, y0, targetX);
         methodName = "Picard's Successive Approximations";
@@ -87,12 +93,20 @@ document.getElementById('solve-ode-btn').addEventListener('click', () => {
             resultData.steps.forEach(s => {
                 html += `<tr><td>${s.step}</td><td>${s.x}</td><td><strong>${s.y}</strong></td><td>${s.slope}</td><td>${s.dy}</td></tr>`;
             });
-        } else if (method === "rk4") {
+        }
+        else if (method === "rk4") {
             html += `<tr><th>Step</th><th>x</th><th>y</th><th>k₁</th><th>k₂</th><th>k₃</th><th>k₄</th></tr></thead><tbody>`;
             resultData.steps.forEach(s => {
                 html += `<tr><td>${s.step}</td><td>${s.x}</td><td><strong>${s.y}</strong></td><td>${s.k1}</td><td>${s.k2}</td><td>${s.k3}</td><td>${s.k4}</td></tr>`;
             });
         }
+        else if (method === "taylor") {
+            html += `<tr><th>Step</th><th>x</th><th>y</th><th>y' (1st Deriv)</th><th>y'' (2nd Deriv)</th><th>y''' (3rd Deriv)</th></tr></thead><tbody>`;
+            resultData.steps.forEach(s => {
+                html += `<tr><td>${s.step}</td><td>${s.x}</td><td><strong>${s.y}</strong></td><td>${s.y1}</td><td>${s.y2}</td><td>${s.y3}</td></tr>`;
+            });
+        }  
+         
             else if (method === "picard") {
             html += `<tr><th>Iteration (n)</th>
             <th> x </th>

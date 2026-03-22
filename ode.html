@@ -68,7 +68,11 @@
             <div class="methods-group" style="margin-top: 25px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
                 <h4 style="margin-top: 0; color: var(--text-main); font-size: 0.95em;">Select Solving Method:</h4>
                 <label style="display:block; margin-bottom:5px;"><input type="radio" name="ode-method" value="euler" checked> 🚶‍♂️ Euler's Method (Basic Step)</label>
+                
                 <label style="display:block; margin-bottom:5px;"><input type="radio" name="ode-method" value="rk4"> 🚀 Runge-Kutta (4th Order)</label>
+                
+                 <label style="display:block; margin-bottom:5px;"><input type="radio" name="ode-method" value="taylor">  Taylor Series(3rd order)</label>
+                
                <label style="display:block;"><input type="radio" name="ode-method" value="picard"> 🔄 Picard's Method (Successive Approx.)</label>
 
             </div>
@@ -90,6 +94,7 @@
 <script src="./ode.js"></script>
 <script src="./ode/euler.js"></script>
 <script src="./ode/runge-kutta.js" ></script>
+<script src="./ode/taylor.js" ></script>
 <script src="./ode/picard.js" ></script>
 
 </body>
